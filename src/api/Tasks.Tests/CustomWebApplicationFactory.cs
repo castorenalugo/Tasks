@@ -19,20 +19,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            // Remove the production DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<TasksDbContext>));
+            var descriptor = services.Single(d => d.ServiceType == typeof(DbContextOptions<TasksDbContext>));
+            services.Remove(descriptor);
 
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Register DbContext pointing dynamically to the running container
-            services.AddDbContext<TasksDbContext>(options =>
-            {
-                options.UseNpgsql(_dbContainer.GetConnectionString());
-            });
+            services.AddDbContext<TasksDbContext>(opts => opts.UseNpgsql(_dbContainer.GetConnectionString()));
         });
     }
 
@@ -45,10 +35,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         await dbContext.Database.MigrateAsync();
     }
 
-    public new async Task DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
-        // Stop and clean up the container after tests finish
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
+
+        await base.DisposeAsync();
     }
 }
