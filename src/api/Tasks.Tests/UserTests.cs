@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Tasks.Api.Database;
+using Tasks.Api.Users;
 
 namespace Tasks.Tests;
 
@@ -9,31 +8,70 @@ namespace Tasks.Tests;
 public class UserTests : TestBase
 {
     [TestMethod]
-    public async Task GetUsers_ReturnsOkResult()
+    public async Task CreateUser_ReturnsCreatedUser()
     {
         // Arrange
-        var user = new User { Name = "Test User", Email = "test@example.com" };
-        SetupDbRecord(user);
+        var createUserRequest = new CreateUserRequest 
+        { 
+            Name = "Test User", 
+            Email = "test@example.com",
+            Password = "password123"
+        };
 
         // Act
-        var response = await Client.GetAsync("/users");
-        var responseModel = await response.Content.ReadFromJsonAsync<User[]>();
+        var response = await Client.PostAsJsonAsync("/users", createUserRequest);
+        var responseModel = await response.Content.ReadFromJsonAsync<UserResponse>();
 
-        // Assert
+        // Assert response
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.IsNotNull(responseModel);
-        Assert.HasCount(1, responseModel);
-        Assert.AreEqual(user.Name, responseModel[0].Name);
-        Assert.AreEqual(user.Email, responseModel[0].Email);
-        Assert.AreEqual(user.Id, responseModel[0].Id);
+        Assert.AreEqual(createUserRequest.Name, responseModel.Name);
+        Assert.AreEqual(createUserRequest.Email, responseModel.Email);
+
+        // Assert database state
+        var ctx = GetDbContext();
+        var userInDb = await ctx.Users.FindAsync(responseModel.Id);
+        Assert.IsNotNull(userInDb);
+        Assert.AreEqual(createUserRequest.Name, userInDb.Name);
+        Assert.AreEqual(createUserRequest.Email, userInDb.Email);
+        Assert.AreEqual(createUserRequest.Password, userInDb.PasswordHash);
     }
 
-
-    private void SetupDbRecord(User user)
+    [TestMethod]
+    public async Task CreateUser_WithExistingEmail_ReturnsValidationError()
     {
-        using var scope = Factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<TasksDbContext>();
-        dbContext.Users.Add(user);
-        dbContext.SaveChanges();
+        // Arrange
+        var existingUser = GivenExistingUserInDatabase();        
+
+        var createUserRequest = new CreateUserRequest 
+        { 
+            Name = "Test User", 
+            Email = existingUser.Email,
+            Password = "password456"
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/users", createUserRequest);
+        
+        // Assert response
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        
+        var responseContent = await response.Content.ReadAsStringAsync();
+        Assert.Contains("User with this email already exists", responseContent);
+    }
+
+    private User GivenExistingUserInDatabase()
+    {
+        var existingUser = new User
+        { 
+            Name = "Existing User", 
+            Email = "existing@example.com",
+            PasswordHash = "password123"
+        };
+
+        var ctx = GetDbContext();
+        ctx.Users.Add(existingUser);
+        ctx.SaveChanges();
+        return existingUser;
     }
 }

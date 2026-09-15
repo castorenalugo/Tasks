@@ -11,7 +11,7 @@ using Tasks.Api.Database;
 namespace Tasks.Api.Database.Migrations
 {
     [DbContext(typeof(TasksDbContext))]
-    [Migration("20260914002641_InitialCreate")]
+    [Migration("20260915025122_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace Tasks.Api.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Tasks.Api.Database.User", b =>
+            modelBuilder.Entity("Tasks.Api.Users.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,6 +37,10 @@ namespace Tasks.Api.Database.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 

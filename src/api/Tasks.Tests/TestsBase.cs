@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Tasks.Api.Database;
+
 namespace Tasks.Tests;
 
 [TestClass]
@@ -9,12 +12,13 @@ public abstract class TestBase
     [AssemblyInitialize]
     public static async Task Initialize(TestContext context) => await Factory.InitializeAsync();
 
-    [AssemblyCleanup]
-    public static async Task Cleanup() => await Factory.DisposeAsync();
-
     [TestInitialize]
-    public void TestSetup()
+    public void TestSetup() => Client = Factory.CreateClient();
+
+    protected TasksDbContext GetDbContext()
     {
-        Client = Factory.CreateClient();
+        var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TasksDbContext>();
+        return dbContext;
     }
 }

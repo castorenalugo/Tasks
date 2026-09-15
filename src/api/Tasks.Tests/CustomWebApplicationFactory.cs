@@ -34,12 +34,4 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         var dbContext = scope.ServiceProvider.GetRequiredService<TasksDbContext>();
         await dbContext.Database.MigrateAsync();
     }
-
-    public override async ValueTask DisposeAsync()
-    {
-        await _dbContainer.StopAsync();
-        await _dbContainer.DisposeAsync();
-
-        await base.DisposeAsync();
-    }
 }
