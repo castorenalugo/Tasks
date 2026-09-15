@@ -18,11 +18,6 @@ public class UserService(UserRepository _userRepository)
         
         await _userRepository.CreateUser(user);
         
-        return new UserResponse 
-        { 
-            Id = user.Id, 
-            Name = user.Name, 
-            Email = user.Email 
-        };
+        return UserResponse.FromUser(user);
     }
 }
