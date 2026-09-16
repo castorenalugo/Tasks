@@ -8,7 +8,6 @@ public class TaskEntity
     public TaskStatusEnum Status { get; set; } = TaskStatusEnum.ToDo;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
-    public int UserId { get; set; }
 
     // History of status changes
     public List<TaskStatusHistory> StatusHistory { get; set; } = new();
