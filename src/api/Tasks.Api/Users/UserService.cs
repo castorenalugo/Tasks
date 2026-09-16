@@ -1,12 +1,15 @@
 using Tasks.Api.Exceptions;
+using Tasks.Api.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace Tasks.Api.Users;
 
-public class UserService(UserRepository _userRepository)
+public class UserService(TasksDbContext _dbContext)
 {
     public async Task<UserResponse> CreateUser(CreateUserRequest request)
     {
-        if(await _userRepository.GetUserByEmail(request.Email) != null)
+        var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        if(existingUser != null)
             throw new ValidationEx("User with this email already exists.");
 
         var user = new User 
@@ -16,7 +19,8 @@ public class UserService(UserRepository _userRepository)
             PasswordHash = request.Password
         };
         
-        await _userRepository.CreateUser(user);
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync();
         
         return UserResponse.FromUser(user);
     }
