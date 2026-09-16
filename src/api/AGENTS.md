@@ -27,7 +27,7 @@
 - **DTO Properties:** Use the `required` modifier on mandatory properties in DTOs:
   ```csharp
   public required string Name { get; set; }
-- **Enums:** Always add "Enum" suffix. (e.g., `public enum TaskStatusEnum`)
+- **Enums:** They must live in a separate file and always add "Enum" suffix. (e.g., `public enum TaskStatusEnum`)
 
 ## Database & EF Core Rules
 - Database context: `TasksDbContext`
@@ -42,6 +42,7 @@
 - Integration tests use `CustomWebApplicationFactory` and inherit from `TestsBase`.
 - Tests require Docker desktop / daemon active to run `Testcontainers.PostgreSql`.
 - Always verify tests pass (`dotnet test`) after refactoring domain logic or endpoint handlers.
+- When creating a resource assert for the response model and the db state.
 
 ## Error Handling & Exception Rules
 - **No `try-catch` in Controllers:** Controller/endpoint actions must **NEVER** wrap service calls in `try-catch` blocks. Allow domain and validation exceptions to bubble up.

@@ -1,0 +1,53 @@
+{
+  "name": "integration-tests",
+  "description": "Skill for creating and managing integration tests in the Tasks.Api project using Testcontainers and PostgreSQL.",
+  "version": "1.0.0",
+  "author": "opencode",
+  "instructions": [
+    "Create comprehensive integration tests that use Testcontainers to spin up a PostgreSQL database for testing specifically in the Tasks.Api project",
+    "Follow the existing pattern in Tasks.Tests project which includes CustomWebApplicationFactory and TestsBase class",
+    "Use TestBase as parent class for all test classes",
+    "Test both API responses and database consistency",
+    "Use MSTest framework (already configured in the project)",
+    "Tests should create a new PostgreSQL container for each test run using Testcontainers.PostgreSql",
+    "Ensure databases are properly migrated before tests run",
+    "Structure tests with Arrange-Act-Assert pattern following existing test examples",
+    "Only target files and operations within this Tasks.Api project directory",
+    "For validation scenarios that require pre-existing data, create helper methods like GivenExisting{EntityName}InDatabase() to setup test data"
+  ],
+  "entrypoint": "integration-tests",
+  "target": "api",
+  "dependencies": [
+    {
+      "name": "Testcontainers.PostgreSql",
+      "version": "4.15.0"
+    },
+    {
+      "name": "Microsoft.AspNetCore.Mvc.Testing",
+      "version": "10.0.12"
+    }
+  ],
+  "templates": {
+    "test-class": {
+      "name": "Integration Test Class Template",
+      "description": "Template for creating new integration test classes",
+      "content": "using System.Net;\nusing System.Net.Http.Json;\nusing Tasks.Api.Tasks;\n\nnamespace Tasks.Tests;\n\n[TestClass]\npublic class {{TestClassName}} : TestBase\n{\n    [TestMethod]\n    public async Task {{TestMethodName}}()\n    {\n        // Arrange\n        var request = new {{RequestType}} \n        { \n            // Set properties here\n        };\n\n        // Act\n        var response = await Client.PostAsJsonAsync(\"{{EndpointPath}}\", request);\n        var responseModel = await response.Content.ReadFromJsonAsync<{{ResponseType}}>();\n\n        // Assert response\n        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);\n        Assert.IsNotNull(responseModel);\n        // Add specific assertions here\n\n        // Assert database state\n        var ctx = GetDbContext();\n        var entityInDb = await ctx.{{EntityName}}.FindAsync(responseModel.Id);\n        Assert.IsNotNull(entityInDb);\n        // Add database assertions here\n    }\n}"
+    },
+    "setup-helper": {
+      "name": "Setup Helper Method Template",
+      "description": "Template for creating helper methods that setup pre-existing test data",
+      "content": "private {{EntityType}} GivenExisting{{EntityName}}InDatabase()\n{\n    var existing{{EntityName}} = new {{EntityType}}\n    { \n        // Set properties here\n    };\n\n    var ctx = GetDbContext();\n    ctx.{{EntityName}}.Add(existing{{EntityName}});\n    ctx.SaveChanges();\n    return existing{{EntityName}};\n}"
+    }
+  },
+  "workflows": {
+    "create-integration-test": [
+      "Identify the API endpoint and entity being tested",
+      "Determine what properties need to be validated in both response and database",
+      "Create new test class inheriting from TestBase",
+      "Use Testcontainers.PostgreSql to create a PostgreSQL container for testing",
+      "Set up TestBase with proper dependency injection for DbContext using the test database",
+      "Write Arrange-Act-Assert style tests validating both API responses and database state consistency",
+      "For validation scenarios requiring pre-existing data, implement helper methods that setup test data before assertions"
+    ]
+  }
+}

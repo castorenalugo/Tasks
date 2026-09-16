@@ -6,13 +6,6 @@ namespace Tasks.Api.Tasks;
 [Route("tasks")]
 public class TaskController(TaskService _service) : ControllerBase
 {
-    [HttpPost]
-    public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequest request, CancellationToken ct)
-    {
-        var record = await _service.CreateTask(request, ct);
-        return Ok(record);
-    }
-
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetTask(int id, CancellationToken ct)
     {
@@ -25,6 +18,13 @@ public class TaskController(TaskService _service) : ControllerBase
     {
         var records = await _service.GetAllTasks(ct);
         return Ok(records);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequest request, CancellationToken ct)
+    {
+        var record = await _service.CreateTask(request, ct);
+        return Created($"/tasks/{record.Id}", record);
     }
 
     [HttpPut("{id:int}")]
