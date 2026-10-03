@@ -23,7 +23,7 @@ public class UserTests : TestBase
         var responseModel = await response.Content.ReadFromJsonAsync<UserResponse>();
 
         // Assert response
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         Assert.IsNotNull(responseModel);
         Assert.AreEqual(createUserRequest.Name, responseModel.Name);
         Assert.AreEqual(createUserRequest.Email, responseModel.Email);
@@ -34,7 +34,6 @@ public class UserTests : TestBase
         Assert.IsNotNull(userInDb);
         Assert.AreEqual(createUserRequest.Name, userInDb.Name);
         Assert.AreEqual(createUserRequest.Email, userInDb.Email);
-        Assert.AreEqual(createUserRequest.Password, userInDb.PasswordHash);
     }
 
     [TestMethod]

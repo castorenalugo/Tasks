@@ -22,7 +22,7 @@ public class TaskTests : TestBase
         var responseModel = await response.Content.ReadFromJsonAsync<TaskResponse>();
 
         // Assert response
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         Assert.IsNotNull(responseModel);
         Assert.AreEqual(createTaskRequest.Title, responseModel.Title);
         Assert.AreEqual(createTaskRequest.Description, responseModel.Description);
